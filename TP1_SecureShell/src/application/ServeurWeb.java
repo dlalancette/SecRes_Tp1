@@ -1,10 +1,23 @@
 package application;
 
+import java.io.UnsupportedEncodingException;
+
+import algorithme.*;
+
 public class ServeurWeb {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	@SuppressWarnings("unused")
+	public static void main(String[] args) throws UnsupportedEncodingException 
+	{
+		String msg = "ceci est une message encrypte";
+		String key = "RETTRY76UIMN3RTE";
+		
+		byte[] data = ReseauFeistel.encryption(msg.getBytes(), key.getBytes());
 
+		String encryptedMSG = new String(data, "UTF-8");
+		String decryptedMSG = new String(ReseauFeistel.decryption(data, key.getBytes()), "UTF-8");
+		
+		return;
 	}
 
 }
