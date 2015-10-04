@@ -28,14 +28,16 @@ public class Utilitaire
 	
 	public static byte[] effectuerXOR(byte[] tabByte1, byte[] tabByte2) 
 	{
-		byte[] out = new byte[tabByte1.length];
+		byte[] tmpTab1 = tabByte1;
+		byte[] tmpTab2 = tabByte2;
+		byte[] tabXOR = new byte[tmpTab1.length];
 		
-		for (int i = 0; i < tabByte1.length; i++) 
+		for (int i = 0; i < tmpTab1.length; i++) 
 		{
-			out[i] = (byte) (tabByte1[i] ^ tabByte2[i]);
+			tabXOR[i] = (byte) (tmpTab1[i] ^ tmpTab2[i]);
 		}
 		
-		return out;
+		return tabXOR;
 	}
 	
 	public static byte[] creerBourrage(int length)

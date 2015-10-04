@@ -98,9 +98,9 @@ public class ReseauFeistel {
 	    {
 	        byte[] tmpR = R;
 	        if(isDecrypt)
-	            R = f_Feistel(R, tabSousCles[15-i]);
+	            R = Utilitaire.effectuerXOR(R, tabSousCles[15-i]);
 	        else
-	            R = f_Feistel(R,tabSousCles[i]);
+	            R = Utilitaire.effectuerXOR(R,tabSousCles[i]);
 	 
 	        R = Utilitaire.effectuerXOR(L, R);
 	        L = tmpR;
@@ -127,13 +127,6 @@ public class ReseauFeistel {
 		}
 	     
 		return out;
-	}
-	
-	private static byte[] f_Feistel(byte[] R, byte[] sousCles) 
-	{
-	     byte[] tmp = R;
-	     tmp = Utilitaire.effectuerXOR(tmp, sousCles);
-	     return tmp;
 	}
 	
 	private static byte[][] creerSousCles(byte[] cle) 
