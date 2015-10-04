@@ -38,45 +38,6 @@ public class Utilitaire
 		return out;
 	}
 	
-	public static byte[] fragmenterBytes(byte[] in, int len) 
-	{
-		int numOfBytes = (8 * in.length - 1) / len + 1;
-		byte[] out = new byte[numOfBytes];
-		
-		for (int i = 0; i < numOfBytes; i++) 
-		{
-			for (int j = 0; j < len; j++) 
-			{
-				int val = extraireBits(in, len * i + j);
-				ajouterBits(out, 8 * i + j, val);
-			}
-		}
-		return out;
-	}
-	
-	public static byte[] permutation(byte[] input, byte[] table) 
-	{
-	     int nrBytes = (table.length - 1) / 8 + 1;
-	     byte[] out = new byte[nrBytes];
-	     for (int i = 0; i < table.length; i++) {
-	          int val = extraireBits(input, table[i] - 1);
-	          ajouterBits(out, i, val);
-	     }
-	     return out;
-	}
-	
-	public static byte[] rotLeft(byte[] input, int len, int pas) 
-	{
-		int nrBytes = (len - 1) / 8 + 1;
-		byte[] out = new byte[nrBytes];
-		for (int i = 0; i < len; i++) {
-			int val = extraireBits(input, (i + pas) % len);
-			ajouterBits(out, i, val);
-		}
-		return out;
-	}
-
-	
 	public static byte[] creerBourrage(int length)
 	{
 		byte[] donnees = new byte[length];
