@@ -1,165 +1,144 @@
+/*********************************************************************************/
+/* Date de la dernière modification: 2015-10-12                                  */
+/* Sommaire: Classe implémentant un Réseau de Feistel simple et permettant       */
+/* 			 l'encryprion et la décryption d'un message avec l'aide d'une clé.   */
+/* 		     Cette même clé est décomposée en sous clés sur lesquels des modulos */
+/* 		     sont effectuées par le biais d'une fonction de tour (16.            */
+/*********************************************************************************/
 package algorithme;
 
 import org.apache.commons.lang3.*;
 
-public class ReseauFeistel {
-	
-	private static int[] IP = 
-	{ 
-		58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36,
-		28, 20, 12, 4, 62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32,
-		24, 16, 8, 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19,
-		11, 3, 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7 
-	};
-	
-	private static int[] invIP = 
-	{ 
-		40, 8, 48, 16, 56, 24, 64, 32, 39, 7, 47,
-		15, 55, 23, 63, 31, 38, 6, 46, 14, 54, 22, 62, 30, 37, 5, 45, 13,
-		53, 21, 61, 29, 36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51,
-		19, 59, 27, 34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17,
-		57, 25 
-	};
-
-	public static byte[] encryption(byte[] data, byte[] cle) 
+public class ReseauFeistel 
+{
+	//Encryption des données, segmentation en bloc de 16 bits (ou 2 bytes)  
+	//Pour chacun des blocs de données la fonction d'encryption est appelée
+	public static byte[] encryption(byte[] donnees, byte[] cle) throws Exception 
 	{
-		int length = 8 - data.length % 8;
-		int i;
-		int count = 0;
-		byte[] padding = Utilitaire.creerBourrage(length);
-		byte[] tmp = new byte[data.length + length];
-		byte[] bloc = new byte[8];
-
+		int tailleBourrage = 8 - donnees.length % 8; //Calcule du nb de bits de padding à ajouter
+		int cptBourrage = 0;
+		byte[] tabCipher = new byte[donnees.length + tailleBourrage];
+		byte[] bloc = new byte[2];
+		
+		//On initialise une Tab de bits de bourrage
+		byte[] tabBitsBourrage = Utilitaire.creerBourrage(tailleBourrage);
+		
+		//Génération d'une Matrice de sous-clé pour les 16 rounds de la fonction d'encryption
 		byte[][] tabSousCles = creerSousCles(cle);
 		
-		for (i = 0; i < data.length + length; i++) 
+		//On segmente les données en blocs de 16 bits
+		for (int i = 0; i < donnees.length + tailleBourrage; i++) 
 		{
-			if (i > 0 && i % 8 == 0) 
+			if (i > 0 && i % 2 == 0) //Si Mod 2
 			{
-				bloc = encrypterBloc(bloc,tabSousCles, false);
-				System.arraycopy(bloc, 0, tmp, i - 8, bloc.length);
+				bloc = encrypterBloc(bloc, tabSousCles, false); //Alors on encrypte un bloc de donnée
+				System.arraycopy(bloc, 0, tabCipher, i - 2, bloc.length); //Ajout dans la table Cipher du bloc encrypté
 			}
 			
-			if (i < data.length)
-				bloc[i % 8] = data[i];
-			else
+			if (i < donnees.length) //On vérifie que l'itérateur n'a pas dépassé la taille des données
+				bloc[i % 2] = donnees[i];
+			else //Le cas échéant on commence à ajouter des bits de bourrage au blocs de données
 			{														
-				bloc[i % 8] = padding[count % 8];
-				count++;
+				bloc[i % 2] = tabBitsBourrage[cptBourrage % 2];
+				cptBourrage++;
 			}
 		}
 		
-		if(bloc.length == 8){
-			bloc = encrypterBloc(bloc,tabSousCles, false);
-			System.arraycopy(bloc, 0, tmp, i - 8, bloc.length);
-		}
-		
-		return tmp;
+		return tabCipher; //Retour des données sous formes de bytes encryptés
 	}
 	
-	public static byte[] decryption(byte[] data, byte[] cle) 
+	//Decryption des données, processus inverse à l'encryption
+	public static byte[] decryption(byte[] donnees, byte[] cle) throws Exception 
 	{
-		int i;
-		byte[] tmp = new byte[data.length];
-		byte[] bloc = new byte[8];
+		byte[] tabCipher = new byte[donnees.length];
+		byte[] bloc = new byte[2];
 		
+		//On génère les sous clés à nouveau
 		byte[][] tabSousCles = creerSousCles(cle);
-
-		for (i = 0; i < data.length; i++) 
-		{
-			if (i > 0 && i % 8 == 0) {
-				bloc = encrypterBloc(bloc,tabSousCles, true);
-				System.arraycopy(bloc, 0, tmp, i - 8, bloc.length);
-			}
-			if (i < data.length)
-				bloc[i % 8] = data[i];
-		}
 		
-		bloc = encrypterBloc(bloc,tabSousCles, true);
-		System.arraycopy(bloc, 0, tmp, i - 8, bloc.length);
+		//On segmente les données en blocs de 16 bits
+		for (int i = 0; i < donnees.length; i++) 
+		{
+			if (i > 0 && i % 2 == 0) //Si mod 2
+			{
+				bloc = encrypterBloc(bloc,tabSousCles, true); //Alors on décrypte les sous blocs
+				System.arraycopy(bloc, 0, tabCipher, i - 2, bloc.length);
+			}
+			
+			if (i < donnees.length)
+				bloc[i % 2] = donnees[i];
+		}
 
-		tmp = Utilitaire.supprimerBourrage(tmp);
+		tabCipher = Utilitaire.supprimerBourrage(tabCipher); //On supprime le bourrage du tableau
 
-		return tmp;
+		return tabCipher; //Retour des données sous forme de bytes décryptés
 	}
 	
-	private static byte[] encrypterBloc(byte[] bloc, byte[][] tabSousCles, boolean isDecrypt) 
+	//Implémentation d'une méthode privé permettant l'encryption ou la décryption d'un bloc de données de 16 bits
+	//Si "estDecrypt" = false, alors on effectue les XOR dans le bon ordre, pour encrypter les blocs
+	//Sinon, on effectue les XOR dans l'ordre inverse pour décrypter les blocs
+	private static byte[] encrypterBloc(byte[] bloc, byte[][] tabSousCles, boolean estDecrypt) 
 	{
-	    byte[] tmp = new byte[bloc.length];
-	    byte[] R = new byte[bloc.length / 2];
-	    byte[] L = new byte[bloc.length / 2];
-	 
-	    tmp = permutation(bloc, IP);
-	 
-	    L = Utilitaire.extraireBits(tmp, 0, IP.length/2);
-	    R = Utilitaire.extraireBits(tmp, IP.length/2, IP.length/2);
-	 
+	    byte[] tabTemp = bloc;
+	    byte[] tabD = new byte[bloc.length / 2];
+	    byte[] tabG = new byte[bloc.length / 2];
+	    byte[] tabTempDroite;
+	    
+	    System.arraycopy(tabTemp, 0, tabG, 0, tabG.length); // On instancie un tableau avec la moitié gauche du bloc
+		System.arraycopy(tabTemp, tabG.length, tabD, 0, tabD.length); //On instancie un autre tableau avec la moité droite du bloc
+		
+		//On effectue 16 tours
 	    for (int i = 0; i < 16; i++) 
 	    {
-	        byte[] tmpR = R;
-	        if(isDecrypt)
-	            R = Utilitaire.effectuerXOR(R, tabSousCles[15-i]);
-	        else
-	            R = Utilitaire.effectuerXOR(R,tabSousCles[i]);
-	 
-	        R = Utilitaire.effectuerXOR(L, R);
-	        L = tmpR;
+	    	tabTempDroite = tabD; //On instancie un tableau temporaire pour la partie droite du bloc
+	    	
+	    	//On effectue un XOR entre la partie droite du bloc et la sous clé du tour
+            tabD = estDecrypt ? Utilitaire.effectuerXOR(tabD, tabSousCles[15-i]) //Si "estDecrypt", on effectue les XOR dans le sens inverse
+            				  : Utilitaire.effectuerXOR(tabD,tabSousCles[i]); //Sinon, on effectue les XOR dans le bon sens
+            
+	        tabD = Utilitaire.effectuerXOR(tabG, tabD); //On combine les deux moitié avec l'aide d'un XOR
+	        tabG = tabTempDroite; //La moitié droite du tour précédent devient la moitié gauche du prochain tour
 	    }
 	 
-	    tmp = ArrayUtils.addAll(R,L);
+	    tabTemp = ArrayUtils.addAll(tabD, tabG); //Concaténation des deux tableaux
 	 
-	    tmp = permutation(tmp, invIP);
-	    return tmp;
+	    return tabTemp; 
 	}
 	
-	private static byte[] permutation(byte[] input, int[] table) 
+	//Génération des 16 sous clés de tour
+	private static byte[][] creerSousCles(byte[] cle) throws Exception 
 	{
-		int pos = 0;
-		int val = 0;
-		int nrBytes = (table.length - 1) / 8 + 1;
-		byte[] out = new byte[nrBytes];
-	     
-		for (int i = 0; i < table.length; i++) 
-		{
-			pos = table[i] - 1;
-			val = (input[pos / 8] >> (8 - (pos % 8 + 1)) & 1);
-			Utilitaire.ajouterBits(out, i, val);
-		}
-	     
-		return out;
-	}
-	
-	private static byte[][] creerSousCles(byte[] cle) 
-	{
-		byte[][] tmp = new byte[16][];						
-		byte[] tmpK = cle;
-		byte[] C = new byte[tmpK.length/2];
-		byte[] D = new byte[tmpK.length/2];
+		byte[][] tabSousCles = new byte[16][];						
+		byte[] tabTemp = cle;
+		byte[] tabG = new byte[tabTemp.length / 2];
+		byte[] tabD = new byte[tabTemp.length / 2];
 		
-		System.arraycopy(tmpK, 0, C, 0, C.length);
-		System.arraycopy(tmpK, C.length, D, 0, D.length);
-
+		if(!Utilitaire.estTailleValide(cle)) //Si la taille de la clé n'est pas de 16 bits
+			throw new Exception("La clé doit être d'une taille de 16 bits!"); //Alors on lance un exception
+		
+		System.arraycopy(tabTemp, 0, tabG, 0, tabG.length); //Initialisation d'un tableau contenant la partie gauche de la clé
+		System.arraycopy(tabTemp, tabG.length, tabD, 0, tabD.length); //Initialisation d'un tableau contenant la partie droite de la clé
+		
+		//On génère à la suite les seize sous clés
+		//Rotation de la partie gauche/droite et fusion des deux tableaux afin de créer la sous clé de tour
 		for (int i = 0; i < 16; i++) 
-		{
-			byte[] cd = ArrayUtils.addAll(rotation(C, C.length * 2), 
-										  rotation(D, D.length * 2));
-			tmp[i] = cd;
-		}
+			tabSousCles[i] = ArrayUtils.addAll(rotation(tabG, tabG.length * 2), 
+					  				           rotation(tabD, tabD.length * 2));
 
-		return tmp;
+		return tabSousCles;
 	}
 	
-	public static byte[] rotation(byte[] input, int len) 
+	private static byte[] rotation(byte[] donnees, int taille) 
 	{
-		int nrBytes = (len - 1) / 8 + 1;
-		byte[] out = new byte[nrBytes];
+		byte[] tblDonneesDecalees = new byte[2];
+		int val = 0;
 		
-		for (int i = 0; i < len; i++) 
+		for (int i = 0; i < taille; i++) 
 		{
-			int val = Utilitaire.extraireBits(input, (i + 1) % len);
-			Utilitaire.ajouterBits(out, i, val);
+			val = Utilitaire.extraireBits(donnees, (i + 1) % taille);
+			Utilitaire.ajouterBits(tblDonneesDecalees, i, val);
 		}
 		
-		return out;
+		return tblDonneesDecalees;
 	}
 }

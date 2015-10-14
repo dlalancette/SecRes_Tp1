@@ -1,5 +1,10 @@
-package algorithme;
+/*********************************************************************************/
+/* Date de la dernière modification: 2015-10-12                                  */
+/* Sommaire: Contient les fonctions d'utilitaires fournissant des services aux   */
+/* 			 autres classes de l'application.                                    */
+/*********************************************************************************/
 
+package algorithme;
 
 public class Utilitaire 
 {
@@ -15,37 +20,26 @@ public class Utilitaire
 		return (donnees[pos / 8] >> (8 - (pos % 8 + 1)) & 1);
 	}
 	 
-	public static byte[] extraireBits(byte[] input, int pos, int n) 
-	{
-		int numOfBytes = (n - 1) / 8 + 1;
-		byte[] out = new byte[numOfBytes];
-		for (int i = 0; i < n; i++) {
-			int val = extraireBits(input, pos + i);
-			ajouterBits(out, i, val);
-		}
-		return out;
-	}
-	
 	public static byte[] effectuerXOR(byte[] tabByte1, byte[] tabByte2) 
 	{
-		byte[] tmpTab1 = tabByte1;
-		byte[] tmpTab2 = tabByte2;
-		byte[] tabXOR = new byte[tmpTab1.length];
+		byte[] tabTemp1 = tabByte1;
+		byte[] tabTemp2 = tabByte2;
+		byte[] tabXOR = new byte[tabTemp1.length];
 		
-		for (int i = 0; i < tmpTab1.length; i++) 
+		for (int i = 0; i < tabTemp1.length; i++) 
 		{
-			tabXOR[i] = (byte) (tmpTab1[i] ^ tmpTab2[i]);
+			tabXOR[i] = (byte)(tabTemp1[i] ^ tabTemp2[i]);
 		}
 		
 		return tabXOR;
 	}
 	
-	public static byte[] creerBourrage(int length)
+	public static byte[] creerBourrage(int taille)
 	{
-		byte[] donnees = new byte[length];
+		byte[] donnees = new byte[taille];
 		donnees[0] = (byte) 128;
 		
-		for (int i = 1; i < length; i++)
+		for (int i = 1; i < taille; i++)
 			donnees[i] = 0;
 		
 		return donnees;
@@ -66,5 +60,10 @@ public class Utilitaire
 		System.arraycopy(donnees, 0, tmp, 0, tmp.length);
 		
 		return tmp;
+	}
+	
+	public static boolean estTailleValide(byte[] donnees)
+	{
+		return donnees.length * 8 == 16 ? true : false;
 	}
 }
