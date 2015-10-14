@@ -1,0 +1,115 @@
+package algorithme;
+
+public class RivestCipher4 {
+		
+//Inspiré du site http://codes-sources.commentcamarche.net/ by skynet.
+	
+	
+		/*variables*/	
+			
+		/*Key must be 256 octet*/
+
+		char[] S = new char[256];
+
+		int i;
+		int j;
+
+			public static void RC4_InitKey(String key,int key_len)
+			{
+				
+				for(i=0;i<256;i++)
+				{
+					S[i]=(char)i;
+				}
+				
+				j=0;
+				for(i=0;i<256;i++)
+				{
+					j=(i+key.charAt(i%key_len)+S[i])& 255;
+					Swap(S,i,j);
+				}
+				i=0;
+				j=0;
+			}
+			
+			
+			
+			private static void Swap(char[] s, int i, int j) {
+				char temp;
+				temp = s[j];
+			    s[j] = s[i];
+			    s[i] = temp;
+			}
+			
+			
+
+			public static String RC4_Encrypt(String Input_Str)
+			{int y;
+			
+			char[] E = new char[Input_Str.length()];
+			for(y=0;y<Input_Str.length();y++)
+			{
+				
+				i = (i + 1) & 255;
+			    j = (j + S[i]) & 255;
+
+			    Swap(S,i,j);
+			   
+			    E[y]=(char)(Input_Str.charAt(y)^S[(S[j] + S[i]) & 255]);
+			
+			}
+			String sortie=new String(E);
+			return sortie;
+			}
+			
+			
+			public String RC4_Decrypt(String Input_Str){
+				return RC4_Encrypt(Input_Str);
+			}
+			/*
+			 private static int[] S;
+		        private static int[] T;
+		        private static int keylen;
+		        
+		        public static void RC4(byte[] key) throws Exception {
+		                if (key.length < 1 || key.length > 256) {
+		                        throw new Exception("key must be between 1 and 256 bytes");
+		                } else {
+		                        keylen = key.length;
+		                        for (int i = 0; i < 256; i++) {
+		                                S[i] = i;
+		                                T[i] = key[i % keylen];
+		                        }
+		                        int j = 0;
+		                        for (int i = 0; i < 256; i++) {
+		                                j = (j + S[i] + T[i]) % 256;
+		                                S[i] ^= S[j];
+		                                S[j] ^= S[i];
+		                                S[i] ^= S[j];
+		                        }
+		                }
+		        }
+		        
+		        public static int[] encrypt(int[] plaintext) {
+		                int[] ciphertext = new int[plaintext.length];
+		                int i = 0, j = 0, k, t;
+		                for (int counter = 0; counter < plaintext.length; counter++) {
+		                        i = (i + 1) % 256;
+		                        j = (j + S[i]) % 256;
+		                        S[i] ^= S[j];
+		                        S[j] ^= S[i];
+		                        S[i] ^= S[j];
+		                        t = (S[i] + S[j]) % 256;
+		                        k = S[t];
+		                        ciphertext[counter] = plaintext[counter] ^ k;
+		                }
+		                return ciphertext;
+		        }
+		        
+		        public static int[] decrypt(int[] ciphertext) {
+		                return encrypt(ciphertext);
+		        }*/
+			
+			//Autre méthode 
+			
+		}

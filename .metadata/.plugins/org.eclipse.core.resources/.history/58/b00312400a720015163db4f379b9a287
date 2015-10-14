@@ -1,0 +1,84 @@
+package algorithme;
+
+import java.security.InvalidKeyException;
+import java.util.Random;
+
+public class RivestCipher4 {
+		
+    private static char[] key;
+    private static int[] sbox;
+    private static Random rand;
+    private static final int SBOX_LENGTH = 256;
+    private static final int KEY_MIN_LENGTH = 25;
+    private static final int RANDOM_NUMBER_SIZE = 128;
+    
+    public RivestCipher4(String key,Integer seed) throws InvalidKeyException {
+    	setRand(seed);
+        setKey(key);
+    }
+  
+    public char[] decrypt(final char[] msg) {
+        return encrypt(msg);
+    }
+ 
+	
+	  public static char[] encrypt(final char[] msg) {
+	        sbox = initSBox(key);
+	        char[] encodedMsg = new char[msg.length];
+	        
+	        int i = 0,j = 0;
+	        
+	        for (int n = 0; n < msg.length; n++) {
+	            i = (i + 1) % SBOX_LENGTH;
+	            j = (j + sbox[i]) % SBOX_LENGTH;
+	            swap(i, j, sbox);
+	          //  int rand = sbox[(sbox[i] + sbox[j]) % SBOX_LENGTH];
+	            encodedMsg[n] = (char) (rand.nextInt() ^ (int) msg[n]);
+	        }
+	        return encodedMsg;
+	    }
+	 
+	    
+	    public static int[] initSBox(char[] key) {
+	        int[] sbox = new int[SBOX_LENGTH];
+	        int j = 0;
+	        
+	        //Initialisation du vecteur état S:
+	        for (int i = 0; i < SBOX_LENGTH; i++) {
+	            sbox[i] = i;
+	        }
+	        
+	        //Permutation initiale de S
+	        for (int i = 0; i < SBOX_LENGTH; i++) {
+	            j = (j + sbox[i] + key[i % key.length]) % SBOX_LENGTH;
+	            swap(i, j, sbox);
+	        }
+	        return sbox;
+	    }
+	 
+	    private static void swap(int i, int j, int[] sbox) {
+	        int temp = sbox[i];
+	        
+	        sbox[i] = sbox[j];
+	        sbox[j] = temp;
+	    }
+	 
+	    public void setKey(String key) throws InvalidKeyException {
+	        if (key.length() >= KEY_MIN_LENGTH && key.length() < SBOX_LENGTH) {
+	            throw new InvalidKeyException("La clé doit etre entre :"
+	                    + KEY_MIN_LENGTH + " and " + (SBOX_LENGTH - 1));
+	        }
+	 
+	        this.key = key.toCharArray();
+	    }
+	    
+	    public void setRand(Integer rand) throws InvalidKeyException {
+	        if (!(rand == RANDOM_NUMBER_SIZE)) {
+	            throw new InvalidKeyException("La graine doit etre d'au moins :"
+	                    + RANDOM_NUMBER_SIZE);
+	        }
+	 
+	        this.rand = new Random(rand) ;
+	    }
+	 
+	}
