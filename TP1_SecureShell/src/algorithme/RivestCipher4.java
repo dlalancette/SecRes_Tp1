@@ -75,11 +75,11 @@ public class RivestCipher4 {
 	       //             + KEY_MIN_LENGTH + " and " + (SBOX_LENGTH - 1));
 	        //}
 	 
-	        this.key = _key.toCharArray();
+	        key = _key.toCharArray();
 	    }
 	    
 	    public void setRand() throws InvalidKeyException {
-	        this.rand = new Random(seed) ;
+	        rand = new Random(seed) ;
 	    }
 	 
 	}

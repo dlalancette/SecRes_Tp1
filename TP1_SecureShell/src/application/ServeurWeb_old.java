@@ -1,13 +1,13 @@
 package application;
 
-import java.io.UnsupportedEncodingException;
+//import java.io.UnsupportedEncodingException;
 
-public class ServeurWeb {
+/*public class ServeurWeb {
 
 	public static void main(String[] args) throws UnsupportedEncodingException 
 	{
 
-		/*String key = "RETTRY76UIMN3RTE";	
+		String key = "RETTRY76UIMN3RTE";	
 		String msg = "ceci est une message encrypte et je fais le test pour voir combien de caractere max ca prend";
 		String longMsg = "ceci est une message encrypte et je fais le test pour voir combien de caractere max ca prend";
 		Integer seed;
@@ -31,7 +31,7 @@ public class ServeurWeb {
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
-		}*/
+		}
 
 		Integer port = 4444;
 		
@@ -51,4 +51,4 @@ public class ServeurWeb {
 
 	}
 
-}
+}*/
