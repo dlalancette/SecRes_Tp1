@@ -1,0 +1,38 @@
+package algorithme;
+
+public class RC4 {
+	
+	public void RC4encryption()
+	{
+		int[] S = new int[255];
+		int[] T = new int [255];
+		int[] Key = new int[1234];
+		
+	//Initialisation du vecteur état S
+	  for (int i= 0 ; i < 255 ; i++)
+	  {
+		  S[i] = i;
+		  T[i] = Key[i % Key.length] ;
+	  }
+	  
+	  //Permuttion initiale de S 
+	  
+	  int j = 0;	
+	  for(int i = 0 ; i < 255 ; i++)
+	  {
+		  j = (j + S[i] + T[i]) % 256;
+		  Swap(S[i],S[j]);
+	  }
+	  
+	}
+	
+	private void Swap(int a , int b)
+	{
+		int temp = a ;
+		a=b;			
+		b =temp;
+		
+		
+	}
+	}
+}

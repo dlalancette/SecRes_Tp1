@@ -1,0 +1,51 @@
+package application;
+
+import java.io.Console;
+import java.io.UnsupportedEncodingException;
+import java.util.Random;
+
+import algorithme.RivestCipher4;
+
+public class ServeurWeb {
+
+	@SuppressWarnings("unused")
+	public static void main(String[] args) throws UnsupportedEncodingException 
+	{
+		
+		String key = "RETTRY76UIMN3RTE";	
+		String msg = "ceci est une message encrypte et je fais le test pour voir combien de caractere max ca prend";
+		String longMsg = "ceci est une message encrypte et je fais le test pour voir combien de caractere max ca prend";
+		
+		try{
+			
+		RivestCipher4 rv = new RivestCipher4(key);
+		
+		//byte[] data = ReseauFeistel.encryption(msg.getBytes(), key.getBytes());
+
+		//String encryptedMSG = new String(data, "UTF-8");
+		//String decryptedMSG = new String(ReseauFeistel.decryption(data, key.getBytes()), "UTF-8");
+		
+		
+		String encryptedMSG = new String(rv.encrypt(longMsg.toCharArray()));
+		String decryptedMSG = new String(rv.decrypt(encryptedMSG.toCharArray()));
+		
+		
+		Random rand = new Random (5);
+		
+		Console console = System.console();
+
+		for(int i = 0 ; i < 10 ; i++)
+		{
+			console.writer().println(rand.nextInt(10000));
+		}
+
+		
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return;
+	}
+
+}

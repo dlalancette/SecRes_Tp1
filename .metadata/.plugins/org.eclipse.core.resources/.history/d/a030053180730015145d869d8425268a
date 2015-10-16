@@ -1,0 +1,62 @@
+package application;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+
+public class Client {
+
+	private int port;
+	Socket socketClient;
+
+	public Client(int port){
+		Client client = new Client (9990);
+	}
+
+	public void connect() throws UnknownHostException, IOException{
+		System.out.println("Attempting to connect to :" + port);
+		socketClient = new Socket(InetAddress.getLocalHost(),port);
+		System.out.println("Connection Established");
+	}
+
+	public String readResponse() throws IOException{
+		String userInput;
+		BufferedReader stdIn = new BufferedReader(new InputStreamReader(socketClient.getInputStream()));
+
+		System.out.println("Response from server:");
+		while ((userInput = stdIn.readLine()) != null) {
+			 return userInput;
+		}
+	}
+	
+	public void sendMessage(String msg)
+	{
+		 ObjectOutputStream  oos = new ObjectOutputStream(socketClient.getOutputStream());
+         System.out.println("Sending request to Socket Server");
+         oos.writeObject(msg);
+         oos.close();
+
+	}
+	
+
+	public static void main(String arg[]){
+		/*//Creating a SocketClient object
+
+		try {
+			//trying to establish connection to the server
+			client.connect();
+			//if successful, read response from server
+			client.readResponse();
+
+		} catch (UnknownHostException e) {
+			System.err.println("Host unknown. Cannot establish connection");
+		} catch (IOException e) {
+			System.err.println("Cannot establish connection. Server may not be up."+e.getMessage());
+		}
+	}*/
+	}
