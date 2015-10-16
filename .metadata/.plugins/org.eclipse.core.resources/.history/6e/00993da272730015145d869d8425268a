@@ -1,0 +1,35 @@
+package application;
+
+public class Interaction {
+
+	private static Server server;
+	private static Client client;
+	
+	public void Interaction(){}
+	
+	public void StartServer (Integer port) 
+	{
+		System.out.println("*Server initialisation*");
+		server = new Server(port);
+		
+		while(true)
+		{}
+		
+		
+		
+	}
+	
+	public void StartClient (Integer port) 
+	{
+		System.out.println("*Client initialisation*");
+		client = new Client(port);
+		
+		while(true)
+		{}
+		
+		
+		
+	}
+	
+	
+}

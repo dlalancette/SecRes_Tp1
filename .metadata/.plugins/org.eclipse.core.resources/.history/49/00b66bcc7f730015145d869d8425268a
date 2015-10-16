@@ -1,0 +1,35 @@
+package application;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+	private ServerSocket serverSocket;
+	private Socket client ;
+
+	private int port;
+	//port = 9990
+	public Server(int port) {
+		this.port = port;
+	}
+
+	public void start() throws IOException {
+		System.out.println("Starting the socket server at port:" + port);
+		serverSocket = new ServerSocket(port);
+
+		//Listen for clients. Block till one connects
+		System.out.println("Waiting client...");
+		client = serverSocket.accept();
+	}
+
+	public void sendMessage(String msg) throws IOException {
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
+		writer.write(msg);
+		writer.flush();
+		writer.close();
+	}
+
+}
