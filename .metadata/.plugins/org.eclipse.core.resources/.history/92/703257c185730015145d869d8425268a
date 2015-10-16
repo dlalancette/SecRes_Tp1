@@ -1,0 +1,43 @@
+package application;
+
+import java.io.IOException;
+
+public class Interaction {
+
+	private static Server server;
+	private static Client client;
+	
+	public void Interaction(){}
+	
+	public void StartServer (Integer port) 
+	{
+		System.out.println("*Server initialisation*");
+		server = new Server(port);
+		
+		try {
+			server.start();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		
+		while(true)
+		{}
+		
+	}
+	
+	public void StartClient (Integer port) 
+	{
+		System.out.println("*Client initialisation*");
+		client = new Client(port);
+		
+		
+		
+		while(true)
+		{}
+		
+		
+		
+	}
+	
+	
+}

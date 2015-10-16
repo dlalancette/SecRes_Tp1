@@ -1,0 +1,19 @@
+package application;
+
+public class Interaction {
+
+	private static Server server;
+	
+	public void Interaction(){}
+	
+	public void StartServer (Integer port) 
+	{
+		System.out.println("*Server initialisation*");
+		server = new Server(port);
+		
+		
+		
+	}
+	
+	
+}
