@@ -43,7 +43,9 @@ public class Authentification {
 		return message;
 		}
 	
+	//Ajout d'un bloc de 128 bits au message
 	public static byte[] bourrage(byte[] buffer){
+		//Détermination de la nouvelle taille du buffer qui doit être un multiple de 1024
 		int nouvelleTaille = nouvelleTaille(buffer.length);
 		
 		byte[] bufferBourré = new byte[nouvelleTaille];
@@ -58,6 +60,35 @@ public class Authentification {
 		return bufferBourré;
 	}
 	
+	//nouvelle taille de buffer
+	public static int nouvelleTaille(int tailleBuffer){
+			int nouvelleTaille;
+			//Si la taille modulo 1024 est plus grande que 896, ajout de 128 bits à la taille du bloc
+			if((128 - (tailleBuffer % 128)) <= 16)
+			{
+				tailleBuffer = tailleBuffer + 16;	
+			}
+			
+			//augmentation de la taille du bloc au prochain multiple de 1024
+			nouvelleTaille = tailleBuffer + (128 - (tailleBuffer%128));
+			
+			return nouvelleTaille;
+		}
+	
+	//Initialisation du tampon de hachage
+	public static void initialisationValeurs(){
+			H = new byte [8][8];
+			H[0] = a;
+			H[1] = b;
+			H[2] = c;
+			H[3] = d;
+			H[4] = e;
+			H[5] = f;
+			H[6] = g;
+			H[7] = h;
+		}
+	
+	//Segmentation du buffer en blocs de 1024 bits contenant 16 mots de 64 bits
 	public static byte[][] segmentation(byte[] buffer){
 		byte[][] buffersegmente = new byte[16][8];
 		for(int i = 0; i < buffersegmente.length; i++)
@@ -70,6 +101,7 @@ public class Authentification {
 		return buffersegmente;
 	}
 	
+	//Augentation de la taille du bloc de 16 à 80 mots
 	public static byte[][] augmentationTailleBloc(byte[][] buffer){
 		byte[][] nouveaubloc = new byte[80][8];
 		for(int i = 0; i <= buffer.length-1; i++)
@@ -81,68 +113,49 @@ public class Authentification {
 		return nouveaubloc;
 	}
 	
+	//Opérations sur bits initialisant les mots 17 à 80
 	public static byte[][] initialisationMotsBloc(byte[][] buffer){
-		byte[] temporaire = new byte[8];
 		for(int i = 16; i < 80; i++)
 		{
-			buffer[i] = Operations.addition(Operations.operationShift1(buffer[i-2]), buffer[i-7],Operations.operationShift0(buffer[i-15]), buffer[i-16]);
+			buffer[i] = Utilitaire.addition(Utilitaire.operationShift1(buffer[i-2]), buffer[i-7],Utilitaire.operationShift0(buffer[i-15]), buffer[i-16]);
 		}
 		
 		return buffer;
 	}
 	
-	public static int nouvelleTaille(int tailleBuffer){
-		int nouvelleTaille;
-		if((128 - (tailleBuffer % 128)) <= 16)
-		{
-			tailleBuffer = tailleBuffer + 16;	
-		}
-		
-		nouvelleTaille = tailleBuffer + (128 - (tailleBuffer%128));
-		
-		return nouvelleTaille;
-	}
 	
+	
+	//Hachage du bloc de données donnant un nouveau tampon de hachage H de 512 bits
 	public static void hachage(byte[][] bloc){
 		for(int t = 0; t < bloc.length-1; t++)
 		{ 
-			T1 = Operations.addition(h, Operations.operationRotation1(H[4]), Operations.operationCH(H[4], H[5], H[6]), bloc[t]);
-			T2 = Operations.addition(Operations.operationRotation0(H[0]), Operations.operationMaj(H[0], H[1], H[2]));
+			T1 = Utilitaire.addition(h, Utilitaire.operationRotation1(H[4]), Utilitaire.operationCH(H[4], H[5], H[6]), bloc[t]);
+			T2 = Utilitaire.addition(Utilitaire.operationRotation0(H[0]), Utilitaire.operationMaj(H[0], H[1], H[2]));
 			h = g;
 			g = f;
 			f = e;
-			e = Operations.addition(d,  T1);
+			e = Utilitaire.addition(d,  T1);
 			d = c;
 			c = b;
 			b = a;
-			a = Operations.addition(T1, T2);
+			a = Utilitaire.addition(T1, T2);
 		}
 		additionH();
 	}
 
+	//Mise à jour du tampon de hachage
 	public static void additionH(){
-		H[0] = Operations.addition(a,  H[0]);
-		H[1] = Operations.addition(b,  H[1]);
-		H[2] = Operations.addition(c,  H[2]);
-		H[3] = Operations.addition(d,  H[3]);
-		H[4] = Operations.addition(e,  H[4]);
-		H[5] = Operations.addition(f,  H[5]);
-		H[6] = Operations.addition(g,  H[6]);
-		H[7] = Operations.addition(h,  H[7]);
+		H[0] = Utilitaire.addition(a,  H[0]);
+		H[1] = Utilitaire.addition(b,  H[1]);
+		H[2] = Utilitaire.addition(c,  H[2]);
+		H[3] = Utilitaire.addition(d,  H[3]);
+		H[4] = Utilitaire.addition(e,  H[4]);
+		H[5] = Utilitaire.addition(f,  H[5]);
+		H[6] = Utilitaire.addition(g,  H[6]);
+		H[7] = Utilitaire.addition(h,  H[7]);
 	}
 	
-	public static void initialisationValeurs(){
-		H = new byte [8][8];
-		H[0] = a;
-		H[1] = b;
-		H[2] = c;
-		H[3] = d;
-		H[4] = e;
-		H[5] = f;
-		H[6] = g;
-		H[7] = h;
-	}
-	
+	//Ajout du tampon de hachage à la fin du message
 	public static byte[] ajoutHachageMessage(byte[] message){
 		byte[] nouveauMessage = new byte [(message.length+64)];
 		for(int i = 0; i < message.length; i++)
