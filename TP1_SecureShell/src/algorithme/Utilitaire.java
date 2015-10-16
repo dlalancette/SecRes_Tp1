@@ -37,7 +37,7 @@ public class Utilitaire
 	public static byte[] creerBourrage(int taille)
 	{
 		byte[] donnees = new byte[taille];
-		donnees[0] = (byte) 128;
+		donnees[0] = (byte) 1;
 		
 		for (int i = 1; i < taille; i++)
 			donnees[i] = 0;

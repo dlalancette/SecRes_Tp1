@@ -43,7 +43,7 @@ public class ReseauFeistel
 				bloc[i % 2] = donnees[i];
 			else //Le cas échéant on commence à ajouter des bits de bourrage au blocs de données
 			{														
-				bloc[i % 2] = tabBitsBourrage[cptBourrage % 2];
+				bloc[i % 2] = tabBitsBourrage[cptBourrage % 8];
 				cptBourrage++;
 			}
 		}
@@ -76,7 +76,7 @@ public class ReseauFeistel
 			if (i < donnees.length)
 				bloc[i % 2] = donnees[i];
 		}
-
+		
 		tabCipher = Utilitaire.supprimerBourrage(tabCipher); //On supprime le bourrage du tableau
 
 		return tabCipher; //Retour des données sous forme de bytes décryptés
