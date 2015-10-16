@@ -13,10 +13,10 @@ public class ReseauFeistel
 {
 	//Encryption des données, segmentation en bloc de 16 bits (ou 2 bytes)  
 	//Pour chacun des blocs de données la fonction d'encryption est appelée
-	public static byte[] encryption(byte[] donnees, byte[] cle) throws Exception 
+	public static byte[] tripleEncryption(byte[] donnees, byte[][] cle) throws Exception 
 	{
-		int tailleBourrage = 8 - donnees.length % 8; //Calcule du nb de bits de padding à ajouter
-		int cptBourrage = 0;
+	    int tailleBourrage = 8 - donnees.length % 8; //Calcule du nb de bits de padding à ajouter
+	    int cptBourrage = 0;
 		byte[] tabCipher = new byte[donnees.length + tailleBourrage];
 		byte[] bloc = new byte[2];
 		
@@ -24,14 +24,18 @@ public class ReseauFeistel
 		byte[] tabBitsBourrage = Utilitaire.creerBourrage(tailleBourrage);
 		
 		//Génération d'une Matrice de sous-clé pour les 16 rounds de la fonction d'encryption
-		byte[][] tabSousCles = creerSousCles(cle);
+		byte[][] tabSousCles1 = creerSousCles(cle[0]);
+		byte[][] tabSousCles2 = creerSousCles(cle[1]);
+		byte[][] tabSousCles3 = creerSousCles(cle[2]);
 		
 		//On segmente les données en blocs de 16 bits
 		for (int i = 0; i < donnees.length + tailleBourrage; i++) 
 		{
 			if (i > 0 && i % 2 == 0) //Si Mod 2
 			{
-				bloc = encrypterBloc(bloc, tabSousCles, false); //Alors on encrypte un bloc de donnée
+				bloc = encrypterBloc(bloc, tabSousCles1, false); //Alors on encrypte un bloc de donnée
+				bloc = encrypterBloc(bloc, tabSousCles2, true);
+				bloc = encrypterBloc(bloc, tabSousCles3, false);
 				System.arraycopy(bloc, 0, tabCipher, i - 2, bloc.length); //Ajout dans la table Cipher du bloc encrypté
 			}
 			
@@ -48,20 +52,24 @@ public class ReseauFeistel
 	}
 	
 	//Decryption des données, processus inverse à l'encryption
-	public static byte[] decryption(byte[] donnees, byte[] cle) throws Exception 
+	public static byte[] tripleDecryption(byte[] donnees, byte[][] cle) throws Exception 
 	{
 		byte[] tabCipher = new byte[donnees.length];
 		byte[] bloc = new byte[2];
 		
 		//On génère les sous clés à nouveau
-		byte[][] tabSousCles = creerSousCles(cle);
+		byte[][] tabSousCles1 = creerSousCles(cle[0]);
+		byte[][] tabSousCles2 = creerSousCles(cle[1]);
+		byte[][] tabSousCles3 = creerSousCles(cle[2]);
 		
 		//On segmente les données en blocs de 16 bits
 		for (int i = 0; i < donnees.length; i++) 
 		{
 			if (i > 0 && i % 2 == 0) //Si mod 2
 			{
-				bloc = encrypterBloc(bloc,tabSousCles, true); //Alors on décrypte les sous blocs
+				bloc = encrypterBloc(bloc,tabSousCles1, true); //Alors on décrypte les sous blocs
+				bloc = encrypterBloc(bloc,tabSousCles2, false);
+				bloc = encrypterBloc(bloc,tabSousCles3, true);
 				System.arraycopy(bloc, 0, tabCipher, i - 2, bloc.length);
 			}
 			
