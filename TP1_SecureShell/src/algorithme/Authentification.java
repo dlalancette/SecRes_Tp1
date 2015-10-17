@@ -1,22 +1,19 @@
 package algorithme;
 
-import java.util.Arrays;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.lang3.*;
 
 public class Authentification {
-	static byte[][] bloc;
-	static byte[] buffer;
 	static int k;
 	static byte [][] H;
-	static byte [] a = DatatypeConverter.parseHexBinary("6a09e667f3bcc908");
-	static byte [] b = DatatypeConverter.parseHexBinary("bb67ae8584caa73b");
-	static byte [] c = DatatypeConverter.parseHexBinary("3c6ef372fe94f82b");
-	static byte [] d = DatatypeConverter.parseHexBinary("a54ff53a5f1d36f1");
-	static byte [] e = DatatypeConverter.parseHexBinary("510e527fade682d1");
-	static byte [] f = DatatypeConverter.parseHexBinary("9b05688c2b3e6c1f");
-	static byte [] g = DatatypeConverter.parseHexBinary("1f83d9abfb41bd6b");
-	static byte [] h = DatatypeConverter.parseHexBinary("5be0cd19137e2179");
+	static byte [] a;
+	static byte [] b;
+	static byte [] c;
+	static byte [] d;
+	static byte [] e;
+	static byte [] f;
+	static byte [] g;
+	static byte [] h;
 	static byte [] T1;
 	static byte [] T2;
 	
@@ -54,11 +51,14 @@ public class Authentification {
 	}
 	
 	public static byte[] authentificationMessage(byte[] message){
+		byte[][] bloc;
+		byte[] buffer;
+		//Initialisation des valeurs du tampon de hachage
+		initialisationValeurs();
 		//Bourrage d'un bloc de données
 		buffer = bourrage(message);
 		
-		//Initialisation des valeurs du tampon de hachage
-		initialisationValeurs();
+
 		
 		//Tant que toutes les données n'auront pas été segmentées
 		while(k < buffer.length)
@@ -113,6 +113,16 @@ public class Authentification {
 	//Initialisation du tampon de hachage
 	public static void initialisationValeurs(){
 			H = new byte [8][8];
+			k = 0;
+			a = DatatypeConverter.parseHexBinary("6a09e667f3bcc908");
+			b = DatatypeConverter.parseHexBinary("bb67ae8584caa73b");
+			c = DatatypeConverter.parseHexBinary("3c6ef372fe94f82b");
+			d = DatatypeConverter.parseHexBinary("a54ff53a5f1d36f1");
+			e = DatatypeConverter.parseHexBinary("510e527fade682d1");
+			f = DatatypeConverter.parseHexBinary("9b05688c2b3e6c1f");
+			g = DatatypeConverter.parseHexBinary("1f83d9abfb41bd6b");
+			h = DatatypeConverter.parseHexBinary("5be0cd19137e2179");
+			
 			H[0] = a;
 			H[1] = b;
 			H[2] = c;
@@ -121,6 +131,7 @@ public class Authentification {
 			H[5] = f;
 			H[6] = g;
 			H[7] = h;
+			
 		}
 	
 	//Segmentation du buffer en blocs de 1024 bits contenant 16 mots de 64 bits
@@ -198,11 +209,11 @@ public class Authentification {
 				nouveauMessage[i] = message[i];
 		}
 		int i = message.length;
-		for(int k = 0; i < nouveauMessage.length; k++)
+		for(int m = 0; i < nouveauMessage.length; m++)
 		{
 			for(int j = 0; j < 8; j++)
 			{	
-				nouveauMessage[i] = H[k][j];
+				nouveauMessage[i] = H[m][j];
 				i++;
 			}
 		}

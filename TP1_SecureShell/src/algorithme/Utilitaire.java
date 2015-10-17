@@ -138,7 +138,7 @@ public class Utilitaire
 		byte[] rotation = new byte[8];
 		mot1 = rotation(mot,x);
 		mot2 = rotation(mot,y);
-		mot3 = rotation(mot,7);
+		mot3 = rotation(mot,z);
 		
 		for(int i = 0; i < rotation.length; i++){
 			rotation[i] = (byte)(mot1[i] & mot2[i] & mot3[i]);
