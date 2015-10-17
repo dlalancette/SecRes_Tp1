@@ -38,8 +38,16 @@ public class ServeurWeb
 			strMessageEncrypte = new String(donnees, "UTF-8");
 			strMessageDecrypte = new String(ReseauFeistel.tripleDecryption(donnees, sousCles), "UTF-8");
 			
+			byte[] codeMac = Authentification.genereHMAC(sousCles[0], strMessageClair.getBytes());
+			byte[] codeMac2 = Authentification.genereHMAC(sousCles[0], strMessageClair.getBytes());
+			
 			System.out.println("Message encrypte: " + strMessageEncrypte);
 			System.out.print("Message decrypte: " + strMessageDecrypte);
+			
+			if(codeMac.toString() == codeMac2.toString())
+				System.out.println("Le message n'a pas ete corrompu!");
+			else
+				System.out.println("Le message a ete corrompu!");
 		} 
 		catch (Exception e) 
 		{

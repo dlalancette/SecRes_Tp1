@@ -1,6 +1,8 @@
 package algorithme;
 
+import java.util.Arrays;
 import javax.xml.bind.DatatypeConverter;
+import org.apache.commons.lang3.*;
 
 public class Authentification {
 	static byte[][] bloc;
@@ -17,6 +19,39 @@ public class Authentification {
 	static byte [] h = DatatypeConverter.parseHexBinary("5be0cd19137e2179");
 	static byte [] T1;
 	static byte [] T2;
+	
+	public static byte[] genereHMAC(byte[] cle, byte[] donnees) 
+	{
+        byte[] i_key_pad = new byte[64];
+        byte[] o_key_pad = new byte[64];
+		byte[] tblTemp1, tblTemp2;
+        byte[] cleHache = new byte[64];
+        
+        //Si plus grand que 64 bits, alors on hache
+        if (cle.length > 64) 
+        	cle = authentificationMessage(cle);
+        
+        System.arraycopy(cle, 0, cleHache, 0, cle.length);
+        
+        //Pour toutes les valeurs après 64 bits, on bourre avec des 0
+        for (int i = cle.length;  i < 64;  i ++) 
+            cleHache[i] = 0;
+        
+        //Pour toutes les bits de la clés, XOR afin de générer IPad et OPad
+        for (int i = 0;  i < 64;  i ++) 
+        {
+            i_key_pad[i] = (byte)(cleHache[i] ^ 0x36);
+            o_key_pad[i] = (byte)(cleHache[i] ^ 0x5c);
+        }
+        
+        //On concatene le message avec IPAD et on applique la fonction de hachage 
+        tblTemp1 = authentificationMessage(ArrayUtils.addAll(i_key_pad, donnees));
+        
+        //On concatene le message prcédent avec Opad et on applique la fonction de hache
+        tblTemp2 = authentificationMessage(ArrayUtils.addAll(o_key_pad, tblTemp1));
+        
+        return tblTemp2; //On retourne le code HMac
+	}
 	
 	public static byte[] authentificationMessage(byte[] message){
 		//Bourrage d'un bloc de données
