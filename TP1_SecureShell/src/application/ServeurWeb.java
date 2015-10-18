@@ -3,6 +3,7 @@ package application;
 import algorithme.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import javax.crypto.KeyGenerator;
@@ -39,15 +40,15 @@ public class ServeurWeb
 			strMessageDecrypte = new String(ReseauFeistel.tripleDecryption(donnees, sousCles), "UTF-8");
 			
 			byte[] codeMac = Authentification.genereHMAC(sousCles[0], strMessageClair.getBytes());
-			byte[] codeMac2 = Authentification.genereHMAC(sousCles[0], strMessageClair.getBytes());
+			byte[] codeMac2 = Authentification.genereHMAC(sousCles[0], strMessageDecrypte.getBytes());
 			
 			System.out.println("Message encrypte: " + strMessageEncrypte);
 			System.out.print("Message decrypte: " + strMessageDecrypte);
 			
-			if(codeMac.toString() == codeMac2.toString())
-				System.out.println("Le message n'a pas ete corrompu!");
+			if(Arrays.equals(codeMac, codeMac2))
+				System.out.println("\n\nLe message n'a pas ete corrompu!");
 			else
-				System.out.println("Le message a ete corrompu!");
+				System.out.println("\n\nLe message a ete corrompu!");
 		} 
 		catch (Exception e) 
 		{
