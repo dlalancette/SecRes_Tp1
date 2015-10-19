@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -19,7 +20,8 @@ public class Serveur extends Thread {
 	private ServerSocket serveurSocket;
 	private Socket client ;
 	private int port;
-	ObjectInputStream ois;
+	ObjectInputStream in ;
+	ObjectOutputStream out ;
 
 	//Initialisation du serveur avec un port défini aléatoirement par nous.
 	public Serveur(int Port) throws IOException {
@@ -36,9 +38,9 @@ public class Serveur extends Thread {
 
 		try{
 			IniServeur();
-
+		    in = new ObjectInputStream(client.getInputStream());
+		    out = new ObjectOutputStream(client.getOutputStream());
 			
-
 			cle = lireReponse();
 
 			System.out.println("Serveur : clé recu : " + cle);
@@ -57,7 +59,7 @@ public class Serveur extends Thread {
 					break;
 				case 3:// Fin de la connection.
 					estFin = false;
-					ois.close();
+					//ois.close();
 					break;
 				default:
 					envoiMessage("Serveur : Commande inconnu");
@@ -93,21 +95,20 @@ public class Serveur extends Thread {
 	public void envoiMessage(String msg) throws IOException {
 		//IniServeur();
 		System.out.println("pServeur : Envoi message au client...");
-		BufferedWriter ecrivain  = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
-		ecrivain.write(msg);
-		ecrivain.flush();
+		
+		out.writeObject(msg);
+		out.flush();
 		//ecrivain.close();
 	}
 	
 	public String lireReponse() throws IOException
 	{
 		String msg= "";
-		ois = null;
 		try {
 			System.out.println("pServeur : Reception du message client...");
-			ois = new ObjectInputStream(new BufferedInputStream(client.getInputStream()));
+			
 			try {
-				msg =  (String) ois.readObject();
+				msg = in.readObject().toString();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}

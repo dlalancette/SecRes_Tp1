@@ -39,9 +39,8 @@ public class ServeurWeb
 	        
 	        Integer port = 4444;
 			
-			
-			Client client = new Client(port);
 			Serveur serveur = new Serveur(port);
+			Client client = new Client(port);
 
 			client.initialiserCle(clePublic);
 			
@@ -66,8 +65,12 @@ public class ServeurWeb
 			if(Arrays.equals(codeMac, codeMac2))
 				System.out.println("\n\nLe message n'a pas ete corrompu!");
 			else
-				System.out.println("\n\nLe message a ete corrompu!");
+<<<<<<< HEAD
+				System.out.println("Le message a ete corrompu!");
 		*/
+=======
+				System.out.println("\n\nLe message a ete corrompu!");
+>>>>>>> origin/master
 		} 
 		
 		catch (Exception e) 

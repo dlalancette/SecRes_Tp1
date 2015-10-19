@@ -3,6 +3,7 @@ package application;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -19,9 +20,9 @@ public class Client extends Thread {
 
 	private Integer port;
 	Socket socketClient;
-	ObjectOutputStream  oos;
-	PrintWriter out = null;
 	String clePublic = null;
+	ObjectInputStream in ;
+	ObjectOutputStream out;
 
 	public Client(Integer Port){
 		port = Port;
@@ -40,9 +41,15 @@ public class Client extends Thread {
 		KeyGenerator generateurCle = null; 
 		int choix = 0; 
 		Boolean estFin = true;
+		
+		
 
 		try{
 			connection();
+			
+			out = new ObjectOutputStream(socketClient.getOutputStream());
+			in = new ObjectInputStream(socketClient.getInputStream());
+			
 
 			envoiMessage(clePublic);
 			System.out.println(lireReponse());
@@ -63,7 +70,7 @@ public class Client extends Thread {
 						break;
 					case 3:
 						envoiMessage("3");
-						oos.close();
+						//oos.close();
 						estFin = false;
 						break;
 					default:
@@ -89,27 +96,22 @@ public class Client extends Thread {
 	}
 
 	public String lireReponse() throws IOException{
-		String entreClient;
-		BufferedReader stdIn = new BufferedReader(new InputStreamReader(socketClient.getInputStream()));
-
-		System.out.println("pClient : Reponse du serveur:");
-		while ((entreClient = stdIn.readLine()) != null && entreClient.length()!= 0) {
-			return entreClient;
+		String entreClient = null;
+		
+		try {
+			entreClient = in.readObject().toString();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 
-		return null;
+		return entreClient;
 	}
 
 	public void envoiMessage(String msg) throws IOException
-	{
-	//	 out = new PrintWriter(new OutputStreamWriter(socketClient.getOutputStream()));
-	//	 out.println(msg);
-		    
-		//connection();
-		oos = new ObjectOutputStream(socketClient.getOutputStream());
+	{		
 		System.out.println("pClient : Envoi du message vers le serveur..." + msg);
-		oos.writeObject(msg);
-		//oos.close();
+		out.writeObject(msg);
+		out.flush();
 	}
 
 
