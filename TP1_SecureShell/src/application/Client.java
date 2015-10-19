@@ -84,7 +84,6 @@ public class Client extends Thread {
 						envoiMessage(msgInfo);
 						estFin = false;
 						System.out.println("Systeme : Fermeture du systeme.");
-						System.exit(1);
 						break;
 					default:// aucune commande
 						msgInfo.Clear();
@@ -226,31 +225,43 @@ public class Client extends Thread {
 	public String avoirTexteUlr() throws IOException
 	{
 		String  path = "";
-
-		while(!path.contains(".txt")){
-			System.out.print("Entrer l'url du fichier (.txt): "); 
-			path = scanneur.next();
-		}
-
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader( new FileReader (new File(path)));
-		} catch (FileNotFoundException e) {
-
-			e.printStackTrace();
-		}
-		String         ligne = null;
 		StringBuilder  stringBuilder = new StringBuilder();
-		String         ls = System.getProperty("line.separator");
+		try {
 
-		while( ( ligne = reader.readLine() ) != null ) {
-			stringBuilder.append( ligne );
-			stringBuilder.append( ls );
+			while(!path.contains(".txt")){
+				System.out.print("Entrer l'url du fichier (.txt): "); 
+				path = scanneur.next();
+			}
+
+			BufferedReader reader = null;
+
+			reader = new BufferedReader( new FileReader (new File(path)));
+
+			String         ligne = null;
+			String         ls = System.getProperty("line.separator");
+
+			while( ( ligne = reader.readLine() ) != null ) {
+				stringBuilder.append( ligne );
+				stringBuilder.append( ls );
+			}
+
+		} catch (FileNotFoundException e) {
+			System.out.println("Erreur de l'ecture du fichier. Fermeture de l'application"); //Alors on lance un exception); 
+			CloseClient();
 		}
-
 		return stringBuilder.toString();
 	}
 
-
+	private void CloseClient()
+	{
+		try {
+			socketClient.close();
+			in.close();
+			out.close();
+			System.exit(1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	} 
 
 }
