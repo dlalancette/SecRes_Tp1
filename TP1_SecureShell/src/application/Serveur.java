@@ -15,6 +15,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import Model.MessageInfo;
 import algorithme.Authentification;
 import algorithme.ReseauFeistel;
 import algorithme.RivestCipher4;
@@ -29,6 +30,7 @@ public class Serveur extends Thread {
 	String cle = "";
 	ObjectInputStream in ;
 	ObjectOutputStream out ;
+	MessageInfo msgRecu = new MessageInfo();
 
 	//Initialisation du serveur avec un port défini aléatoirement par nous.
 	public Serveur(int Port) throws IOException {
@@ -39,9 +41,7 @@ public class Serveur extends Thread {
 	@Override
 	public void run()
 	{
-		String choix = null; 
 		boolean estFin = true;
-		String strMessageClair = null;
 
 		try{
 			IniServeur();
@@ -51,26 +51,33 @@ public class Serveur extends Thread {
 
 			while(estFin){
 
-				choix = lireReponse();
+				lireReponse();
 
-				switch (Integer.valueOf(choix.substring(0, 1)))
+				switch (msgRecu.typeChoix)
 				{
 				case 1:// Envoie d'un texte du client;
-					if(verificationMessage(choix))
-						envoiMessage("bien recu");
+					if(verificationMessage())
+						envoiMessage("Validé et bien recu");
 					else
-						envoiMessage("mal recu");
+						envoiMessage("Erreur validation");
 					break;
 				case 3:// Fin de la connection.
 					estFin = false;
+					out.close();
+					in.close();
 					break;
-
 				default:
 					envoiMessage("pServeur : Commande inconnu");
 					break;
 
 				}
-				System.out.println(lireReponse());
+				if(estFin)
+				{
+					System.out.println("pServeur : Validation du message");
+				}else{
+					System.out.println("pServeur : Fermeture"); 
+				}
+
 			}	
 		}
 		catch(Exception ex)
@@ -78,17 +85,14 @@ public class Serveur extends Thread {
 			ex.printStackTrace();	
 		}
 	}
-
+	//Initialisation serveur
 	public void IniServeur() {
 		System.out.println("pServeur : Lancement du serveur sur le port : " + port);
 		try {
 			serveurSocket = new ServerSocket(port);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
-		System.out.println("pServeur : Attente client...");
-		try {
+			System.out.println("pServeur : Attente client...");
+
 			client = serveurSocket.accept();
 			System.out.println("pServeur : Connection établie avec un client");
 		} catch (IOException e) {
@@ -97,22 +101,19 @@ public class Serveur extends Thread {
 	}
 
 	public void envoiMessage(String msg) throws IOException {
-		//IniServeur();
 		System.out.println("pServeur : Envoi message au client...");
 
 		out.writeObject(msg);
 		out.flush();
-		//ecrivain.close();
 	}
 
-	public String lireReponse() throws IOException
+	public void lireReponse() throws IOException
 	{
-		String msg= "";
 		try {
 			System.out.println("pServeur : Reception du message client...");
 
 			try {
-				msg = in.readObject().toString();
+				msgRecu = (MessageInfo)in.readObject();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -120,41 +121,37 @@ public class Serveur extends Thread {
 
 			e.printStackTrace();
 		}
-		return msg;
-
 	}
 
-	private boolean verificationMessage(String msgRecu) throws UnsupportedEncodingException, Exception// [0]choix menu -[1]-Type d'algo - [2] - message [3]- Cle   [4] - code hmac;
+	//Validation du message soit : décryption et validation avec hmac
+	private boolean verificationMessage() throws UnsupportedEncodingException, Exception// [0]choix menu -[1]-Type d'algo - [2] - message [3]- Cle   [4] - code hmac;
 	{
-		String [] splitMsg = msgRecu.split("/");
 		String strMessageDecrypte = null ;
 		byte[] codeMac,codeMac2 = null ;
+		byte[][] sousCles;
 
-		if(splitMsg[1].contains("RF"))
-		{
-			byte[][] sousCles = new byte[3][];
+		if(msgRecu.infoAlgo.contains("RF")){
+			//Dcryptage avec Reseau Fesitel
+			sousCles = new byte[3][];
 
-			String[] splitSousCles = splitMsg[3].split("-");
+			sousCles[0] = msgRecu.sousCle1;
+			sousCles[1] = msgRecu.sousCle2;
+			sousCles[2] = msgRecu.sousCle3;
 
-			sousCles[0] = splitSousCles[0].getBytes();
-			sousCles[1] = splitSousCles[0].getBytes();
-			sousCles[2] = splitSousCles[0].getBytes();
+			strMessageDecrypte = new String(ReseauFeistel.tripleDecryption(msgRecu.bytemessageEncrypte, sousCles), "UTF-8");
 
-			strMessageDecrypte = new String(ReseauFeistel.tripleDecryption(splitMsg[2].getBytes(), sousCles), "UTF-8");
-
-			codeMac = Authentification.genereHMAC(sousCles[0], strMessageDecrypte.getBytes());
+			codeMac = Authentification.genereHMAC(sousCles[0], strMessageDecrypte.getBytes("UTF-8"));
 		}
 		else
 		{
-			String[] splitInfoAlgo = splitMsg[3].split("-");
+			//Decryptage avec Rc4
+			strMessageDecrypte = new String( new RivestCipher4( msgRecu.cle,msgRecu.graine).decrypte( msgRecu.strmessageEncrypte.toCharArray()));
 
-			strMessageDecrypte = new String( new RivestCipher4(splitInfoAlgo[0].toString(),Integer.valueOf( splitInfoAlgo[1]) ).decrypte(splitMsg[2].toCharArray()));
-
-			codeMac = Authentification.genereHMAC(splitInfoAlgo[0].getBytes("UTF-8"), strMessageDecrypte.getBytes("UTF-8"));
+			codeMac = Authentification.genereHMAC(msgRecu.cle.getBytes("UTF-8"), strMessageDecrypte.getBytes("UTF-8"));
 		}
 
-		codeMac2 = splitMsg[4].getBytes("UTF-8");
-
+		codeMac2 = msgRecu.hMac;
+		//vérification des code Hmac
 		if(Arrays.equals(codeMac, codeMac2))
 		{
 			System.out.println("\n\nLe message n'a pas ete corrompu!");

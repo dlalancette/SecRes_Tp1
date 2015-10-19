@@ -22,15 +22,16 @@ import java.util.Scanner;
 
 import javax.crypto.KeyGenerator;
 
+import Model.MessageInfo;
 import algorithme.Authentification;
 import algorithme.ReseauFeistel;
 import algorithme.RivestCipher4;
 
 //Le nom de fonction illustre bien la fonction de chacun d'entre elles.
-
 public class Client extends Thread {
 
 	String newLine = System.getProperty("line.separator");
+
 	String clePublic = null;
 	Integer port;
 
@@ -41,6 +42,7 @@ public class Client extends Thread {
 	KeyGenerator generateurCle = null;
 	Scanner scanneur = new Scanner(System.in); //Création d'un scanneur pour la lecture des entrées utilisateurs
 
+	MessageInfo msgInfo = new MessageInfo();
 	public Client(Integer Port){
 		port = Port;
 	}
@@ -54,10 +56,8 @@ public class Client extends Thread {
 	@Override
 	public void run()
 	{
-		KeyGenerator generateurCle = null; 
 		int choix = 0; 
 		Boolean estFin = true;
-		String messageRecu= null;
 
 		try{
 			connection();
@@ -70,23 +70,26 @@ public class Client extends Thread {
 				if(scanneur.hasNextInt()){
 					choix = scanneur.nextInt();
 					switch (choix) {
-					case 1:
-						//System.out.println("pClient :texte ");
-						envoiMessage("1" + avoirMesageEncode(true));
+					case 1://Envoyer un message à partir d'un texte saisi par l'utilisateur
+						avoirMesageEncode(true);
+						envoiMessage(msgInfo);
 						break;
-
-					case 2:
-						//System.out.println("pClient : fichier .txt ");
-						envoiMessage("1" + avoirMesageEncode(false));
+					case 2: //Envoyer un message à partir d'un fichier texte
+						avoirMesageEncode(false);
+						envoiMessage(msgInfo);
 						break;
-					case 3:
-						envoiMessage("3");
+					case 3: //Fermeture du systeme
+						msgInfo.Clear();
+						msgInfo.typeChoix = 3;
+						envoiMessage(msgInfo);
 						estFin = false;
 						System.out.println("Systeme : Fermeture du systeme.");
-						System.exit(1);;
+						System.exit(1);
 						break;
 					default:// aucune commande
-						envoiMessage("4");
+						msgInfo.Clear();
+						msgInfo.typeChoix = 4;
+						envoiMessage(msgInfo);
 						break;
 					}
 					System.out.println(lireReponse());
@@ -119,21 +122,19 @@ public class Client extends Thread {
 		return entreClient;
 	}
 
-	public void envoiMessage(String msg) throws IOException
+	public void envoiMessage(MessageInfo msgInfo) throws IOException
 	{		
-		System.out.println("pClient : Envoi du message vers le serveur..." + msg);
-		out.writeObject(msg);
+		System.out.println("pClient : Envoi du message vers le serveur...");
+		out.writeObject(msgInfo);
 		out.flush();
 	}
 
-
-	@SuppressWarnings("null")
-	public String genereMsgEncrypteRF(String strMessageClair)
+	// Génération du message avec l'encryption Reseau Feistel
+	public void genereMsgEncrypteRF(String strMessageClair)
 	{
 		byte[] donnees;
 		byte[][] sousCles = new byte[3][];
-		String strAEnvoyer = "";
-		strAEnvoyer= "1";
+		msgInfo.typeChoix = 1;
 		try 
 		{
 			//Génération d'une clé aléatoire de 16 bits
@@ -144,31 +145,27 @@ public class Client extends Thread {
 			sousCles[2] = generateurCle.generateKey().getEncoded();
 
 			donnees = ReseauFeistel.tripleEncryption(strMessageClair.getBytes(), sousCles);
-			
-			strAEnvoyer += "/ ";
-			strAEnvoyer += "RF";
-			strAEnvoyer += "/ ";
-			strAEnvoyer += new String(donnees, "UTF-8");
-			strAEnvoyer += "/ ";
-			strAEnvoyer += new String(sousCles[0],"UTF-8") + " - " + new String(sousCles[1],"UTF-8") + " - " + new String(sousCles[2],"UTF-8");
-			strAEnvoyer += "/ ";
-			strAEnvoyer += new String( Authentification.genereHMAC(sousCles[0], strMessageClair.getBytes()),"UTF-8");			
 
-			return strAEnvoyer.toString();
+			msgInfo.infoAlgo = "RF";
+			msgInfo.bytemessageEncrypte = donnees;
+			msgInfo.sousCle1 = sousCles[0] ;
+			msgInfo.sousCle2 = sousCles[1];
+			msgInfo.sousCle3 = sousCles[2];
+			msgInfo.hMac =  Authentification.genereHMAC(sousCles[0], strMessageClair.getBytes("UTF-8"));			
 
 		}catch(Exception ex){
 			ex.printStackTrace();
-			return null;
 		}
 	}
 
-	public String genereMsgEncrypteRC4(String strMessageClair) throws InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException
+	// Génération du message avec l'encryption RivestCipher4
+	public void genereMsgEncrypteRC4(String strMessageClair) throws InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException
 	{
 		String cle = null;
-		String strAEnvoyer = "";
-		strAEnvoyer = "1";
 		Integer nombreAll = new SecureRandom().nextInt();
-		
+
+		msgInfo.typeChoix = 1;
+
 		generateurCle = KeyGenerator.getInstance("HmacSHA1");
 		generateurCle.init(16);
 
@@ -177,65 +174,63 @@ public class Client extends Thread {
 
 		if(nombreAll < 0)
 			nombreAll -= nombreAll;
-		
+
 		initialiserCle(cle);
-		
+
 		RivestCipher4 rivestCipher4 = new RivestCipher4(cle,nombreAll); 
 
 		try 
 		{
-			strAEnvoyer += "/";
-			strAEnvoyer += "RC";
-			strAEnvoyer += "/";
-			strAEnvoyer += new String( rivestCipher4.encrypte(strMessageClair.toCharArray()));
-			strAEnvoyer += "/";
-			strAEnvoyer += cle + "-" + nombreAll;
-			strAEnvoyer += "/";
-			strAEnvoyer += new String( Authentification.genereHMAC(cle.getBytes("UTF-8"), strMessageClair.getBytes("UTF-8")), "UTF-8");		
 
+			msgInfo.infoAlgo = "RC";
 
-			return strAEnvoyer;
+			msgInfo.strmessageEncrypte = new String( RivestCipher4.encrypte(strMessageClair.toCharArray()));
+
+			msgInfo.cle = cle;
+			msgInfo.graine= nombreAll;
+
+			msgInfo.hMac = Authentification.genereHMAC(cle.getBytes("UTF-8"), strMessageClair.getBytes("UTF-8"));		
+
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
-		return null;
 	}
 
-	public String avoirMesageEncode(Boolean estUlr ) throws InvalidKeyException, IOException, NoSuchAlgorithmException
+	//Permet de diriger l'utilisateur a l'aide de question aux bonnes place selons les choix faites.
+	public void avoirMesageEncode(Boolean estUlr ) throws InvalidKeyException, IOException, NoSuchAlgorithmException
 	{
 		String strMessageClair = null;
-		String strMessageEncrypte = null;
 		String choixAlgo = null;
 
 		if(estUlr)
 		{
 			System.out.print("Entrer un message à encrypter: "); //On demande à l'usager de saisir un message à encrypter
 			strMessageClair = scanneur.next(); //On récupère le message saisi par l'usager
-			
+
 		}else
 		{
 			strMessageClair = avoirTexteUlr();
 		}
-		System.out.print("Veuillez choisir le type d'encryption: " + newLine + " A - ReseauFeistel " + newLine + "B - RivestCipher4 ");
+		System.out.print("Veuillez choisir le type d'encryption: " + newLine + " A - ReseauFeistel " + newLine + " B - RivestCipher4 ");
 		choixAlgo = scanneur.next();
 
 		if(choixAlgo.contains("A"))
 		{
-			strMessageEncrypte = genereMsgEncrypteRF(strMessageClair);
+			genereMsgEncrypteRF(strMessageClair);
 		}else if(choixAlgo.contains("B")) {
-			strMessageEncrypte = genereMsgEncrypteRC4(strMessageClair);
+			genereMsgEncrypteRC4(strMessageClair);
 		}
-
-		return strMessageEncrypte;
-
 	}
 
+	//Permet d'avoid un fichier .txt
 	public String avoirTexteUlr() throws IOException
 	{
 		String  path = "";
 
-		System.out.print("Entrer l'url du fichier: "); 
-		path = scanneur.next();
+		while(!path.contains(".txt")){
+			System.out.print("Entrer l'url du fichier (.txt): "); 
+			path = scanneur.next();
+		}
 
 		BufferedReader reader = null;
 		try {
