@@ -12,12 +12,13 @@ public class ServeurWeb
 {
 	public static void main(String[] args) throws IOException 
 	{
-        Scanner scanneur = new Scanner(System.in); //Création d'un scanneur pour la lecture des entrées utilisateurs
+        //Scanner scanneur = new Scanner(System.in); //Création d'un scanneur pour la lecture des entrées utilisateurs
         KeyGenerator generateurCle = null;
 
 		String strMessageClair = null;
 		String strMessageEncrypte = null;
 		String strMessageDecrypte = null;
+		String clePublic = null;
 		
 		byte[] donnees;
 		byte[][] sousCles = new byte[3][];
@@ -26,11 +27,27 @@ public class ServeurWeb
 		{
 			//Génération d'une clé aléatoire de 16 bits
 			generateurCle = KeyGenerator.getInstance("HmacSHA1");
-	        generateurCle.init(16);
-	        sousCles[0] = generateurCle.generateKey().getEncoded();
-	        sousCles[1] = generateurCle.generateKey().getEncoded();
-	        sousCles[2] = generateurCle.generateKey().getEncoded();
+	       // generateurCle.init(16);
+	       // sousCles[0] = generateurCle.generateKey().getEncoded();
+	       // sousCles[1] = generateurCle.generateKey().getEncoded();
+	       // sousCles[2] = generateurCle.generateKey().getEncoded();
 	        
+	        generateurCle.init(1024);
+	        
+	        clePublic = generateurCle.generateKey().getEncoded().toString();
+	        
+	        Integer port = 4444;
+			
+			Serveur serveur = new Serveur(port);
+			Client client = new Client(port);
+
+			client.initialiserCle(clePublic);
+			
+			serveur.start();
+			client.start();
+
+	        
+	        /*
 	        System.out.print("Entrer un message à encrypter: "); //On demande à l'usager de saisir un message à encrypter
 	        strMessageClair = scanneur.next(); //On récupère le message saisi par l'usager
 	        
@@ -48,14 +65,16 @@ public class ServeurWeb
 				System.out.println("Le message n'a pas ete corrompu!");
 			else
 				System.out.println("Le message a ete corrompu!");
+		*/
 		} 
+		
 		catch (Exception e) 
 		{
 			e.printStackTrace();
 		}
 		
-		scanneur.close();
-		System.exit(1);
+		//scanneur.close();
+		//System.exit(1);
 	}
 	
 

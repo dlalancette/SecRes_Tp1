@@ -33,14 +33,10 @@ package application;
 			ex.printStackTrace();
 		}
 
-		Integer port = 4444;
+		
 		
 		try{
-			Server server = new Server(port);
-			Client client = new Client(port);
 
-			server.start();
-			client.start();
 			
 		}catch(Exception ex)
 		{
