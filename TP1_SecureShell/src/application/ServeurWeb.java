@@ -11,6 +11,7 @@ import javax.crypto.SecretKey;
 
 public class ServeurWeb   
 {
+	//A LIRE : En enlevent les commentaire vous pourrez effectuer une démo
 	public static void main(String[] args) throws IOException 
 	{
         //Scanner scanneur = new Scanner(System.in); //Création d'un scanneur pour la lecture des entrées utilisateurs
@@ -27,23 +28,29 @@ public class ServeurWeb
 		try 
 		{
 			//Génération d'une clé aléatoire de 16 bits
-			generateurCle = KeyGenerator.getInstance("HmacSHA1");
+			//generateurCle = KeyGenerator.getInstance("HmacSHA1");
 	       // generateurCle.init(16);
 	       // sousCles[0] = generateurCle.generateKey().getEncoded();
 	       // sousCles[1] = generateurCle.generateKey().getEncoded();
 	       // sousCles[2] = generateurCle.generateKey().getEncoded();
 	        
-	        generateurCle.init(1024);
-	        
-	        clePublic = generateurCle.generateKey().getEncoded().toString();
+			
+			/*
+			
+			String key = "testtest";
+			Integer graine = 123;
+			String msgClair= "test";
+			
+			new RivestCipher4(key,12);
+			String msgE = new String( RivestCipher4.encrypte(msgClair.toCharArray())); 
+			String msgD = new RivestCipher4(key,12).decrypte(msgE.toCharArray()).toString();
+			*/	       
 	        
 	        Integer port = 4444;
-			
 			
 			Client client = new Client(port);
 			Serveur serveur = new Serveur(port);
 
-			client.initialiserCle(clePublic);
 			
 			serveur.start();
 			client.start();
